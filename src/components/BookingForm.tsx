@@ -114,13 +114,9 @@ export function BookingForm({ room, roomName, onBookingComplete }: BookingFormPr
         timeSlotId: selectedTimeSlotId
       };
       
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       // Create booking
-      createBooking(completeFormData);
+      await createBooking(completeFormData);
       
-      // Show success toast (handled by createBooking)
       setIsLoading(false);
       onBookingComplete();
     } catch (error) {
@@ -128,6 +124,10 @@ export function BookingForm({ room, roomName, onBookingComplete }: BookingFormPr
       toast.error(error instanceof Error ? error.message : "Failed to create booking. Please try again.");
     }
   };
+  
+  // Get today's date with time set to midnight for accurate comparison
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   
   return (
     <div className="booking-form-container animate-in">
@@ -242,7 +242,7 @@ export function BookingForm({ room, roomName, onBookingComplete }: BookingFormPr
                     selected={selectedDate}
                     onSelect={handleDateChange}
                     initialFocus
-                    disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
+                    disabled={(date) => date < today}
                     className="bg-navy border-navy"
                   />
                 </PopoverContent>

@@ -41,8 +41,6 @@ export function RoomCard({ room }: RoomCardProps) {
         </div>
         
         <div className="p-6">
-          <p className="text-gray-300 mb-6 h-20">{room.description}</p>
-          
           <Button 
             onClick={() => setIsBookingModalOpen(true)}
             className="w-full bg-gradient-to-r from-gold-dark to-gold hover:from-gold hover:to-gold-light text-navy-dark font-medium py-2 rounded-lg transition-all duration-300 transform hover:scale-[1.02] hover:shadow-[0_8px_20px_-6px_rgba(212,175,55,0.6)] focus:outline-none focus:ring-2 focus:ring-gold focus:ring-opacity-50"

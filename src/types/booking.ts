@@ -11,7 +11,6 @@ export type TimeSlot = {
 export type RoomDetails = {
   id: Room;
   name: string;
-  description: string;
   image: string;
 };
 

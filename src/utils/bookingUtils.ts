@@ -82,8 +82,24 @@ export const saveBookings = (bookings: Booking[]): void => {
   localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(bookings));
 };
 
+// Google Sheets integration for storing booking data
+export const saveBookingToGoogleSheets = async (booking: Booking): Promise<boolean> => {
+  // In a real application, you would make an API call to a backend service
+  // that would then update the Google Sheet for the appropriate room
+  
+  console.log(`Saving booking to Google Sheets for ${booking.room} room:`, booking);
+  
+  // Simulate a successful API call (in a real app, this would be an actual API call)
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log(`Booking saved to ${booking.room} Google Sheet successfully!`);
+      resolve(true);
+    }, 1000);
+  });
+};
+
 // Create a new booking
-export const createBooking = (bookingData: BookingFormData): Booking => {
+export const createBooking = async (bookingData: BookingFormData): Promise<Booking> => {
   const bookings = loadBookings();
   
   // Check if time slot is already booked
@@ -114,11 +130,22 @@ export const createBooking = (bookingData: BookingFormData): Booking => {
     timeSlot: { ...timeSlot, isBooked: true }
   };
   
-  // Save updated bookings
+  // Save booking to Google Sheets based on room type
+  try {
+    const sheetSaved = await saveBookingToGoogleSheets(newBooking);
+    if (!sheetSaved) {
+      throw new Error("Failed to save booking to Google Sheets.");
+    }
+  } catch (error) {
+    console.error("Error saving to Google Sheets:", error);
+    throw new Error("Failed to save booking. Please try again.");
+  }
+  
+  // Save updated bookings to local storage
   saveBookings([...bookings, newBooking]);
   
-  // Simulate sending confirmation email
-  simulateSendConfirmationEmail(newBooking);
+  // Show success message
+  toast.success("Booking confirmed! Your booking details have been saved.");
   
   return newBooking;
 };
@@ -154,47 +181,21 @@ export const getAvailableTimeSlots = (room: Room, date: Date): TimeSlot[] => {
   }));
 };
 
-// Simulate sending a confirmation email
-export const simulateSendConfirmationEmail = (booking: Booking): void => {
-  console.log("Confirmation email sent to:", booking.email, {
-    subject: `Booking Confirmation: ${booking.room.toUpperCase()} Room`,
-    body: `
-      Dear ${booking.teamHeadName},
-      
-      Your booking for the ${booking.room.toUpperCase()} Room has been confirmed.
-      
-      Details:
-      - Date: ${formatDate(booking.date)}
-      - Time: ${formatTime(booking.timeSlot.startTime)} - ${formatTime(booking.timeSlot.endTime)}
-      - Team: ${booking.teamName}
-      - Purpose: ${booking.purpose}
-      
-      Thank you for your booking!
-    `
-  });
-  
-  // Show success message
-  toast.success("Booking confirmed! A confirmation email has been sent to your email address.");
-};
-
 // Room details
 export const roomDetails = [
   {
     id: "dance" as Room,
     name: "Dance Room",
-    description: "A spacious studio with hardwood floors, mirrors, and professional sound system. Perfect for dance rehearsals, choreography sessions, and group performances.",
     image: "/dance-room.jpg" 
   },
   {
     id: "src" as Room,
     name: "SRC Room",
-    description: "Multi-purpose space with flexible setup options. Suitable for meetings, workshops, presentations, and collaborative sessions.",
     image: "/src-room.jpg"
   },
   {
     id: "music" as Room,
     name: "Music Room",
-    description: "Acoustically treated room with professional audio equipment. Ideal for music practice, recording sessions, and band rehearsals.",
     image: "/music-room.jpg"
   }
 ];
