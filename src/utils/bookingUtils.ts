@@ -1,4 +1,3 @@
-
 import { Booking, BookingFormData, Room, TimeSlot } from "@/types/booking";
 import { toast } from "sonner";
 
@@ -82,6 +81,22 @@ export const saveBookings = (bookings: Booking[]): void => {
   localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(bookings));
 };
 
+// Send confirmation email to user
+export const sendConfirmationEmail = async (booking: Booking): Promise<boolean> => {
+  // In a real application, you would make an API call to a backend service
+  // that would send an email using a service like SendGrid, Mailgun, etc.
+  
+  console.log(`Sending confirmation email to ${booking.email} for ${booking.room} room booking:`, booking);
+  
+  // Simulate a successful email sending (in a real app, this would be an actual API call)
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      console.log(`Confirmation email sent to ${booking.email} successfully!`);
+      resolve(true);
+    }, 1000);
+  });
+};
+
 // Google Sheets integration for storing booking data
 export const saveBookingToGoogleSheets = async (booking: Booking): Promise<boolean> => {
   // In a real application, you would make an API call to a backend service
@@ -136,16 +151,22 @@ export const createBooking = async (bookingData: BookingFormData): Promise<Booki
     if (!sheetSaved) {
       throw new Error("Failed to save booking to Google Sheets.");
     }
+    
+    // Send confirmation email
+    const emailSent = await sendConfirmationEmail(newBooking);
+    if (!emailSent) {
+      console.warn("Failed to send confirmation email, but booking was saved.");
+    }
   } catch (error) {
-    console.error("Error saving to Google Sheets:", error);
-    throw new Error("Failed to save booking. Please try again.");
+    console.error("Error in booking process:", error);
+    throw new Error("Failed to complete booking. Please try again.");
   }
   
   // Save updated bookings to local storage
   saveBookings([...bookings, newBooking]);
   
   // Show success message
-  toast.success("Booking confirmed! Your booking details have been saved.");
+  toast.success("Booking confirmed! A confirmation email has been sent to your email address.");
   
   return newBooking;
 };

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Room } from "@/types/booking";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { BookingForm } from "./BookingForm";
-import { X, Check } from "lucide-react";
+import { X, Check, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -67,6 +67,11 @@ export function BookingModal({ isOpen, onClose, room, roomName }: BookingModalPr
                 <p className="text-gray-300 text-center mb-6 max-w-xs">
                   A confirmation email has been sent to your email address.
                 </p>
+                
+                <div className="flex items-center justify-center space-x-2 text-gold mb-6">
+                  <Mail className="h-5 w-5" />
+                  <span className="text-sm">Check your inbox</span>
+                </div>
                 
                 <Button 
                   onClick={handleClose}
