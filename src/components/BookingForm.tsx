@@ -16,7 +16,7 @@ export function BookingForm({ room, roomName, onBookingComplete }: BookingFormPr
     isLoading,
     formData,
     selectedDate,
-    selectedTimeSlotId,
+    selectedTimeSlotIds,
     currentStep,
     handleInputChange,
     handleDateChange,
@@ -44,7 +44,7 @@ export function BookingForm({ room, roomName, onBookingComplete }: BookingFormPr
           handleDateChange={handleDateChange}
           selectedRoom={room}
           handleTimeSlotSelect={handleTimeSlotSelect}
-          selectedTimeSlotId={selectedTimeSlotId}
+          selectedTimeSlotIds={selectedTimeSlotIds}
           handlePrevStep={handlePrevStep}
         />
       )}

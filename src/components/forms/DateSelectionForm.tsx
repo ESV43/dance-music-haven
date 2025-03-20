@@ -15,7 +15,7 @@ interface DateSelectionFormProps {
   handleDateChange: (date: Date | undefined) => void;
   selectedRoom: Room;
   handleTimeSlotSelect: (timeSlotId: string) => void;
-  selectedTimeSlotId: string | null;
+  selectedTimeSlotIds: string[]; // Changed from selectedTimeSlotId (string | null)
   handlePrevStep: () => void;
 }
 
@@ -24,7 +24,7 @@ export function DateSelectionForm({
   handleDateChange,
   selectedRoom,
   handleTimeSlotSelect,
-  selectedTimeSlotId,
+  selectedTimeSlotIds,
   handlePrevStep
 }: DateSelectionFormProps) {
   // Get today's date with time set to midnight for accurate comparison
@@ -88,7 +88,7 @@ export function DateSelectionForm({
               selectedDate={selectedDate}
               selectedRoom={selectedRoom}
               onSelectTimeSlot={handleTimeSlotSelect}
-              selectedTimeSlotId={selectedTimeSlotId}
+              selectedTimeSlotIds={selectedTimeSlotIds}
             />
           </div>
         )}

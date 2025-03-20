@@ -1,3 +1,4 @@
+
 import { Booking, BookingFormData, Room, TimeSlot } from "@/types/booking";
 import { toast } from "sonner";
 
@@ -117,24 +118,29 @@ export const saveBookingToGoogleSheets = async (booking: Booking): Promise<boole
 export const createBooking = async (bookingData: BookingFormData): Promise<Booking> => {
   const bookings = loadBookings();
   
-  // Check if time slot is already booked
-  const isSlotBooked = bookings.some(
-    (booking) => 
-      booking.room === bookingData.room && 
-      booking.date.toDateString() === bookingData.date.toDateString() && 
-      booking.timeSlotId === bookingData.timeSlotId
+  // Check if any of the selected time slots are already booked
+  const timeSlotIds = bookingData.timeSlotIds;
+  const alreadyBookedSlots = timeSlotIds.filter(
+    slotId => bookings.some(
+      booking => 
+        booking.room === bookingData.room && 
+        booking.date.toDateString() === bookingData.date.toDateString() && 
+        booking.timeSlots.some(slot => slot.id === slotId)
+    )
   );
   
-  if (isSlotBooked) {
-    throw new Error("This time slot is already booked. Please select another.");
+  if (alreadyBookedSlots.length > 0) {
+    throw new Error(`${alreadyBookedSlots.length} of your selected time slots are already booked. Please select different slots.`);
   }
   
-  // Find time slot details
+  // Find time slot details for all selected slots
   const timeSlots = generateTimeSlots();
-  const timeSlot = timeSlots.find(slot => slot.id === bookingData.timeSlotId);
+  const selectedTimeSlots = timeSlots
+    .filter(slot => timeSlotIds.includes(slot.id))
+    .map(slot => ({ ...slot, isBooked: true }));
   
-  if (!timeSlot) {
-    throw new Error("Invalid time slot selected.");
+  if (selectedTimeSlots.length === 0) {
+    throw new Error("Invalid time slots selected.");
   }
   
   // Create new booking
@@ -142,7 +148,7 @@ export const createBooking = async (bookingData: BookingFormData): Promise<Booki
     ...bookingData,
     id: `booking-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
     createdAt: new Date(),
-    timeSlot: { ...timeSlot, isBooked: true }
+    timeSlots: selectedTimeSlots
   };
   
   // Save booking to Google Sheets based on room type
@@ -166,7 +172,7 @@ export const createBooking = async (bookingData: BookingFormData): Promise<Booki
   saveBookings([...bookings, newBooking]);
   
   // Show success message
-  toast.success("Booking confirmed! A confirmation email has been sent to your email address.");
+  toast.success(`Booking confirmed for ${selectedTimeSlots.length} time slots! A confirmation email has been sent.`);
   
   return newBooking;
 };
@@ -182,7 +188,7 @@ export const getBookingsForRoomAndDate = (room: Room, date: Date): Booking[] => 
 // Get all booked time slot IDs for a specific room and date
 export const getBookedTimeSlotIds = (room: Room, date: Date): string[] => {
   const bookings = getBookingsForRoomAndDate(room, date);
-  return bookings.map((booking) => booking.timeSlotId);
+  return bookings.flatMap((booking) => booking.timeSlots.map(slot => slot.id));
 };
 
 // Check if a time slot is booked

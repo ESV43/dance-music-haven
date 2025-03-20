@@ -9,14 +9,14 @@ interface TimeSlotPickerProps {
   selectedDate: Date;
   selectedRoom: Room;
   onSelectTimeSlot: (timeSlotId: string) => void;
-  selectedTimeSlotId: string | null;
+  selectedTimeSlotIds: string[]; // Changed from selectedTimeSlotId (string | null)
 }
 
 export function TimeSlotPicker({ 
   selectedDate, 
   selectedRoom, 
   onSelectTimeSlot, 
-  selectedTimeSlotId 
+  selectedTimeSlotIds 
 }: TimeSlotPickerProps) {
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,7 +73,7 @@ export function TimeSlotPicker({
               "px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300",
               slot.isBooked 
                 ? "bg-navy-light/20 text-gray-500 cursor-not-allowed opacity-50" 
-                : selectedTimeSlotId === slot.id
+                : selectedTimeSlotIds.includes(slot.id)
                   ? "bg-gold text-navy-dark shadow-md scale-[1.03]"
                   : "bg-navy-light hover:bg-navy hover:scale-[1.03] text-white"
             )}
@@ -87,19 +87,28 @@ export function TimeSlotPicker({
 
   return (
     <div className="time-slot-picker animate-in">
-      <h2 className="text-xl font-semibold mb-4 text-white">Select a Time Slot</h2>
+      <h2 className="text-xl font-semibold mb-4 text-white">Select Time Slots</h2>
+      <p className="text-sm text-white/70 mb-4">
+        You can select multiple time slots for your booking
+      </p>
       
       {morningSlots.length > 0 && renderTimeSlotGroup(morningSlots, "Morning")}
       {afternoonSlots.length > 0 && renderTimeSlotGroup(afternoonSlots, "Afternoon")}
       {eveningSlots.length > 0 && renderTimeSlotGroup(eveningSlots, "Evening")}
       
-      {selectedTimeSlotId && (
+      {selectedTimeSlotIds.length > 0 && (
         <div className="mt-4 p-3 bg-gold/10 border border-gold/20 rounded-lg">
-          <p className="text-gold">
-            You selected: {formatTime(timeSlots.find(slot => slot.id === selectedTimeSlotId)?.startTime || "")} - {
-              formatTime(timeSlots.find(slot => slot.id === selectedTimeSlotId)?.endTime || "")
-            }
-          </p>
+          <p className="text-gold font-medium mb-2">Selected Time Slots:</p>
+          <div className="flex flex-wrap gap-2">
+            {selectedTimeSlotIds.map(id => {
+              const slot = timeSlots.find(slot => slot.id === id);
+              return slot ? (
+                <span key={id} className="inline-flex items-center px-2 py-1 rounded-md bg-gold/20 text-gold text-xs">
+                  {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                </span>
+              ) : null;
+            })}
+          </div>
         </div>
       )}
     </div>

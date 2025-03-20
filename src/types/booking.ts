@@ -22,11 +22,11 @@ export type BookingFormData = {
   purpose: string;
   room: Room;
   date: Date;
-  timeSlotId: string;
+  timeSlotIds: string[]; // Changed from timeSlotId to timeSlotIds array
 };
 
 export type Booking = BookingFormData & {
   id: string;
   createdAt: Date;
-  timeSlot: TimeSlot;
+  timeSlots: TimeSlot[]; // Changed from timeSlot to timeSlots array
 };

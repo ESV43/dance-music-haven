@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Room, BookingFormData } from "@/types/booking";
 import { createBooking } from "@/utils/bookingUtils";
@@ -15,7 +14,7 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
     purpose: "",
   });
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedTimeSlotId, setSelectedTimeSlotId] = useState<string | null>(null);
+  const [selectedTimeSlotIds, setSelectedTimeSlotIds] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -26,13 +25,17 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
   const handleDateChange = (date: Date | undefined) => {
     if (date) {
       setSelectedDate(date);
-      // Reset time slot when date changes
-      setSelectedTimeSlotId(null);
+      setSelectedTimeSlotIds([]);
     }
   };
   
   const handleTimeSlotSelect = (timeSlotId: string) => {
-    setSelectedTimeSlotId(timeSlotId);
+    setSelectedTimeSlotIds(prev => {
+      if (prev.includes(timeSlotId)) {
+        return prev.filter(id => id !== timeSlotId);
+      }
+      return [...prev, timeSlotId];
+    });
   };
   
   const validateStep1 = () => {
@@ -42,14 +45,12 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
       return false;
     }
     
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast.error("Please enter a valid email address.");
       return false;
     }
     
-    // Basic phone validation
     const phoneRegex = /^\d{10,}$/;
     if (!phoneRegex.test(phone.replace(/\D/g, ''))) {
       toast.error("Please enter a valid phone number (at least 10 digits).");
@@ -65,8 +66,8 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
       return false;
     }
     
-    if (!selectedTimeSlotId) {
-      toast.error("Please select a time slot.");
+    if (selectedTimeSlotIds.length === 0) {
+      toast.error("Please select at least one time slot.");
       return false;
     }
     
@@ -86,7 +87,7 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
   };
   
   const handleSubmit = async () => {
-    if (!selectedDate || !selectedTimeSlotId) return;
+    if (!selectedDate || selectedTimeSlotIds.length === 0) return;
     
     try {
       setIsLoading(true);
@@ -95,10 +96,9 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
         ...formData as BookingFormData,
         room,
         date: selectedDate,
-        timeSlotId: selectedTimeSlotId
+        timeSlotIds: selectedTimeSlotIds
       };
       
-      // Create booking
       await createBooking(completeFormData);
       
       setIsLoading(false);
@@ -113,7 +113,7 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
     isLoading,
     formData,
     selectedDate,
-    selectedTimeSlotId,
+    selectedTimeSlotIds,
     currentStep,
     handleInputChange,
     handleDateChange,

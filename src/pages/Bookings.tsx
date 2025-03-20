@@ -20,7 +20,10 @@ export default function Bookings() {
       const dateCompare = a.date.getTime() - b.date.getTime();
       if (dateCompare !== 0) return dateCompare;
       
-      return a.timeSlot.startTime.localeCompare(b.timeSlot.startTime);
+      // Use the first time slot for sorting when multiple exist
+      const aStartTime = a.timeSlots[0]?.startTime || "";
+      const bStartTime = b.timeSlots[0]?.startTime || "";
+      return aStartTime.localeCompare(bStartTime);
     });
     
     setBookings(loadedBookings);
@@ -106,11 +109,21 @@ export default function Bookings() {
                       <span className="text-gray-300">{formatDate(booking.date)}</span>
                     </div>
                     
-                    <div className="flex items-center text-sm">
-                      <Clock className="h-4 w-4 text-gold mr-2" />
-                      <span className="text-gray-300">
-                        {formatTime(booking.timeSlot.startTime)} - {formatTime(booking.timeSlot.endTime)}
-                      </span>
+                    <div className="flex flex-col space-y-2">
+                      <div className="flex items-center text-sm">
+                        <Clock className="h-4 w-4 text-gold mr-2" />
+                        <span className="text-gray-300">
+                          {booking.timeSlots.length} time slot{booking.timeSlots.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      
+                      <div className="ml-6 flex flex-wrap gap-1">
+                        {booking.timeSlots.map((slot, i) => (
+                          <span key={i} className="text-xs text-gold/80 bg-gold/10 px-2 py-1 rounded">
+                            {formatTime(slot.startTime)} - {formatTime(slot.endTime)}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                     
                     <div className="flex items-center text-sm">
