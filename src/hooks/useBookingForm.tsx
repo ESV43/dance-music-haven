@@ -1,9 +1,10 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Room, BookingFormData } from "@/types/booking";
 import { createBooking } from "@/utils/bookingUtils";
 import { toast } from "sonner";
 
-export function useBookingForm(room: Room, onBookingComplete: () => void) {
+export function useBookingForm(room: Room, onBookingComplete: () => void, userEmail: string | null = null) {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Partial<BookingFormData>>({
     room,
@@ -16,6 +17,21 @@ export function useBookingForm(room: Room, onBookingComplete: () => void) {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [selectedTimeSlotIds, setSelectedTimeSlotIds] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState(1);
+  
+  // Fill the email from Google login if provided
+  useEffect(() => {
+    if (userEmail) {
+      setFormData(prev => ({ ...prev, email: userEmail }));
+    }
+  }, [userEmail]);
+  
+  // Check if user was previously authenticated with localStorage
+  useEffect(() => {
+    const storedEmail = localStorage.getItem("userEmail");
+    if (storedEmail && !userEmail) {
+      setFormData(prev => ({ ...prev, email: storedEmail }));
+    }
+  }, [userEmail]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

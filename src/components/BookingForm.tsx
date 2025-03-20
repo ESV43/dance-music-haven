@@ -4,6 +4,8 @@ import { PersonalDetailsForm } from "./forms/PersonalDetailsForm";
 import { DateSelectionForm } from "./forms/DateSelectionForm";
 import { BookingFormFooter } from "./forms/BookingFormFooter";
 import { useBookingForm } from "@/hooks/useBookingForm";
+import { GoogleLogin } from "./auth/GoogleLogin";
+import { useState } from "react";
 
 interface BookingFormProps {
   room: Room;
@@ -12,6 +14,9 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ room, roomName, onBookingComplete }: BookingFormProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  
   const {
     isLoading,
     formData,
@@ -23,7 +28,20 @@ export function BookingForm({ room, roomName, onBookingComplete }: BookingFormPr
     handleTimeSlotSelect,
     handleNextStep,
     handlePrevStep
-  } = useBookingForm(room, onBookingComplete);
+  } = useBookingForm(room, onBookingComplete, userEmail);
+  
+  const handleGoogleLoginSuccess = (email: string) => {
+    setIsAuthenticated(true);
+    setUserEmail(email);
+    
+    // Pre-fill the email field in the form
+    if (email) {
+      const event = {
+        target: { name: 'email', value: email }
+      } as React.ChangeEvent<HTMLInputElement>;
+      handleInputChange(event);
+    }
+  };
   
   return (
     <div className="booking-form-container animate-in">
@@ -33,9 +51,22 @@ export function BookingForm({ room, roomName, onBookingComplete }: BookingFormPr
             Book {roomName}
           </h2>
           
+          {!isAuthenticated && (
+            <div className="mb-6">
+              <p className="text-white/70 mb-4">Sign in to simplify your booking:</p>
+              <GoogleLogin onLoginSuccess={handleGoogleLoginSuccess} />
+              <div className="my-4 flex items-center">
+                <div className="h-px flex-1 bg-white/10"></div>
+                <p className="mx-4 text-white/50 text-sm">or continue as guest</p>
+                <div className="h-px flex-1 bg-white/10"></div>
+              </div>
+            </div>
+          )}
+          
           <PersonalDetailsForm 
             formData={formData} 
             handleInputChange={handleInputChange} 
+            isAuthenticated={isAuthenticated}
           />
         </div>
       ) : (

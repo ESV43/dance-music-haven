@@ -1,4 +1,3 @@
-
 import { Booking, BookingFormData, Room, TimeSlot } from "@/types/booking";
 import { toast } from "sonner";
 
@@ -89,13 +88,56 @@ export const sendConfirmationEmail = async (booking: Booking): Promise<boolean> 
   
   console.log(`Sending confirmation email to ${booking.email} for ${booking.room} room booking:`, booking);
   
+  // Get the formatted time slots for the email
+  const formattedTimeSlots = booking.timeSlots.map(slot => 
+    `${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}`
+  ).join(', ');
+  
+  // Prepare email content (this would be sent via API in a real app)
+  const emailSubject = `Booking Confirmation - ${getRoomNameByType(booking.room)}`;
+  const emailBody = `
+    Hello ${booking.teamHeadName},
+    
+    Your booking for ${getRoomNameByType(booking.room)} has been confirmed.
+    
+    Booking Details:
+    - Date: ${formatDate(booking.date)}
+    - Time: ${formattedTimeSlots}
+    - Team: ${booking.teamName}
+    - Purpose: ${booking.purpose}
+    
+    Please keep this email for your records. If you need to make any changes to your booking, please contact us.
+    
+    Thank you for using our service!
+  `;
+  
+  console.log("Email subject:", emailSubject);
+  console.log("Email body:", emailBody);
+  
   // Simulate a successful email sending (in a real app, this would be an actual API call)
   return new Promise((resolve) => {
     setTimeout(() => {
       console.log(`Confirmation email sent to ${booking.email} successfully!`);
+      
+      // Save to localStorage for demo purposes (to show the email was "sent")
+      const sentEmails = JSON.parse(localStorage.getItem('sentConfirmationEmails') || '[]');
+      sentEmails.push({
+        to: booking.email,
+        subject: emailSubject,
+        body: emailBody,
+        sentAt: new Date().toISOString()
+      });
+      localStorage.setItem('sentConfirmationEmails', JSON.stringify(sentEmails));
+      
       resolve(true);
-    }, 1000);
+    }, 1500);
   });
+};
+
+// Helper function to get room name from room type
+export const getRoomNameByType = (room: Room): string => {
+  const room_details = roomDetails.find(r => r.id === room);
+  return room_details ? room_details.name : room.charAt(0).toUpperCase() + room.slice(1) + ' Room';
 };
 
 // Google Sheets integration for storing booking data
@@ -162,6 +204,9 @@ export const createBooking = async (bookingData: BookingFormData): Promise<Booki
     const emailSent = await sendConfirmationEmail(newBooking);
     if (!emailSent) {
       console.warn("Failed to send confirmation email, but booking was saved.");
+      toast.warning("Your booking is confirmed, but we couldn't send a confirmation email.");
+    } else {
+      toast.success(`Booking confirmed! A confirmation email has been sent to ${newBooking.email}`);
     }
   } catch (error) {
     console.error("Error in booking process:", error);
@@ -170,9 +215,6 @@ export const createBooking = async (bookingData: BookingFormData): Promise<Booki
   
   // Save updated bookings to local storage
   saveBookings([...bookings, newBooking]);
-  
-  // Show success message
-  toast.success(`Booking confirmed for ${selectedTimeSlots.length} time slots! A confirmation email has been sent.`);
   
   return newBooking;
 };
