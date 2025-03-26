@@ -1,5 +1,6 @@
 import { Booking, BookingFormData, Room, TimeSlot } from "@/types/booking";
 import { toast } from "sonner";
+import emailjs from "@emailjs/browser";
 
 // Generate time slots from 6 AM to 12 AM (midnight) in 30-minute intervals
 export const generateTimeSlots = (): TimeSlot[] => {
@@ -81,57 +82,52 @@ export const saveBookings = (bookings: Booking[]): void => {
   localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(bookings));
 };
 
-// Send confirmation email to user
+// Send confirmation email to user using EmailJS
 export const sendConfirmationEmail = async (booking: Booking): Promise<boolean> => {
-  // In a real application, you would make an API call to a backend service
-  // that would send an email using a service like SendGrid, Mailgun, etc.
-  
-  console.log(`Sending confirmation email to ${booking.email} for ${booking.room} room booking:`, booking);
-  
   // Get the formatted time slots for the email
   const formattedTimeSlots = booking.timeSlots.map(slot => 
     `${formatTime(slot.startTime)} - ${formatTime(slot.endTime)}`
   ).join(', ');
+
+  // Prepare email content
+  const emailParams = {
+    to_email: booking.email,
+    to_name: booking.teamHeadName,
+    room_name: getRoomNameByType(booking.room),
+    booking_date: formatDate(booking.date),
+    booking_time: formattedTimeSlots,
+    team_name: booking.teamName,
+    booking_purpose: booking.purpose,
+    reply_to: "noreply@example.com", // Update with your email
+  };
   
-  // Prepare email content (this would be sent via API in a real app)
-  const emailSubject = `Booking Confirmation - ${getRoomNameByType(booking.room)}`;
-  const emailBody = `
-    Hello ${booking.teamHeadName},
-    
-    Your booking for ${getRoomNameByType(booking.room)} has been confirmed.
-    
-    Booking Details:
-    - Date: ${formatDate(booking.date)}
-    - Time: ${formattedTimeSlots}
-    - Team: ${booking.teamName}
-    - Purpose: ${booking.purpose}
-    
-    Please keep this email for your records. If you need to make any changes to your booking, please contact us.
-    
-    Thank you for using our service!
-  `;
+  console.log("Sending email with params:", emailParams);
   
-  console.log("Email subject:", emailSubject);
-  console.log("Email body:", emailBody);
-  
-  // Simulate a successful email sending (in a real app, this would be an actual API call)
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log(`Confirmation email sent to ${booking.email} successfully!`);
-      
-      // Save to localStorage for demo purposes (to show the email was "sent")
-      const sentEmails = JSON.parse(localStorage.getItem('sentConfirmationEmails') || '[]');
-      sentEmails.push({
-        to: booking.email,
-        subject: emailSubject,
-        body: emailBody,
-        sentAt: new Date().toISOString()
-      });
-      localStorage.setItem('sentConfirmationEmails', JSON.stringify(sentEmails));
-      
-      resolve(true);
-    }, 1500);
-  });
+  try {
+    // Replace these IDs with your actual EmailJS service, template, and user IDs
+    const response = await emailjs.send(
+      "YOUR_EMAILJS_SERVICE_ID", // Replace with your EmailJS Service ID
+      "YOUR_EMAILJS_TEMPLATE_ID", // Replace with your EmailJS Template ID
+      emailParams,
+      "YOUR_EMAILJS_PUBLIC_KEY" // Replace with your EmailJS Public Key
+    );
+    
+    console.log("Email sent successfully:", response);
+    
+    // Save to localStorage for demo purposes (to show the email was sent)
+    const sentEmails = JSON.parse(localStorage.getItem('sentConfirmationEmails') || '[]');
+    sentEmails.push({
+      to: booking.email,
+      subject: `Booking Confirmation - ${getRoomNameByType(booking.room)}`,
+      sentAt: new Date().toISOString()
+    });
+    localStorage.setItem('sentConfirmationEmails', JSON.stringify(sentEmails));
+    
+    return true;
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    return false;
+  }
 };
 
 // Helper function to get room name from room type
@@ -142,18 +138,35 @@ export const getRoomNameByType = (room: Room): string => {
 
 // Google Sheets integration for storing booking data
 export const saveBookingToGoogleSheets = async (booking: Booking): Promise<boolean> => {
-  // In a real application, you would make an API call to a backend service
-  // that would then update the Google Sheet for the appropriate room
-  
+  // This would typically be implemented using Google Sheets API
+  // For demonstration, we'll log that we would save this data
   console.log(`Saving booking to Google Sheets for ${booking.room} room:`, booking);
   
-  // Simulate a successful API call (in a real app, this would be an actual API call)
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      console.log(`Booking saved to ${booking.room} Google Sheet successfully!`);
-      resolve(true);
-    }, 1000);
-  });
+  // In a real implementation, you would make a fetch/axios request to your backend
+  // which would then use the Google Sheets API to append the booking data
+  const apiEndpoint = "https://your-backend-api.com/bookings"; // Replace with your actual API endpoint
+  
+  try {
+    // This is commented out since there's no actual API to call in this demo
+    // const response = await fetch(apiEndpoint, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify(booking),
+    // });
+    
+    // if (!response.ok) {
+    //   throw new Error('Failed to save booking to Google Sheets');
+    // }
+    
+    // For demo purposes, we'll return true
+    console.log(`Booking would be saved to ${booking.room} Google Sheet`);
+    return true;
+  } catch (error) {
+    console.error('Error saving to Google Sheets:', error);
+    return false;
+  }
 };
 
 // Create a new booking
