@@ -9,6 +9,8 @@ import Bookings from "./pages/Bookings";
 import NotFound from "./pages/NotFound";
 import { AnimatePresence } from "framer-motion";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import { AuthProvider } from "./contexts/AuthContext";
+import { Navbar } from "./components/Navbar";
 
 const queryClient = new QueryClient();
 
@@ -18,19 +20,26 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "demo-mode-cli
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AnimatePresence mode="wait">
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/bookings" element={<Bookings />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AnimatePresence>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <div className="flex min-h-screen flex-col">
+              <Navbar />
+              <main className="flex-1">
+                <AnimatePresence mode="wait">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/bookings" element={<Bookings />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AnimatePresence>
+              </main>
+            </div>
+          </BrowserRouter>
+        </TooltipProvider>
+      </AuthProvider>
     </GoogleOAuthProvider>
   </QueryClientProvider>
 );

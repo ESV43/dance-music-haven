@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { GoogleLogin as ReactGoogleLogin } from "@react-oauth/google";
 import { jwtDecode } from "jwt-decode";
 import { User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface GoogleLoginProps {
   onLoginSuccess: (email: string) => void;
@@ -25,6 +26,7 @@ interface DecodedCredential {
 export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
+  const { login } = useAuth();
 
   const handleGoogleLoginSuccess = async (credentialResponse: GoogleCredentialResponse) => {
     setIsLoading(true);
@@ -33,12 +35,11 @@ export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
       // Decode the JWT token from Google
       const decoded = jwtDecode<DecodedCredential>(credentialResponse.credential);
       const userEmail = decoded.email;
+      const userName = decoded.name || "";
+      const userPicture = decoded.picture || "";
       
-      // Store the authenticated state in localStorage
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userEmail", userEmail);
-      localStorage.setItem("userName", decoded.name || "");
-      localStorage.setItem("userPicture", decoded.picture || "");
+      // Use the auth context login method
+      login(userEmail, userName, userPicture);
       
       toast.success("Successfully signed in with Google!");
       onLoginSuccess(userEmail);
@@ -61,12 +62,11 @@ export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
     
     // Create a demo user
     const demoEmail = `demo.user${Math.floor(Math.random() * 1000)}@example.com`;
+    const demoName = "Demo User";
+    const demoPicture = "";
     
-    // Store the authenticated state in localStorage
-    localStorage.setItem("isAuthenticated", "true");
-    localStorage.setItem("userEmail", demoEmail);
-    localStorage.setItem("userName", "Demo User");
-    localStorage.setItem("userPicture", "");
+    // Use the auth context login method
+    login(demoEmail, demoName, demoPicture);
     
     toast.success("Demo mode activated. Logged in as Demo User.");
     onLoginSuccess(demoEmail);
