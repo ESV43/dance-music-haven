@@ -58,6 +58,11 @@ export const formatDate = (date: Date): string => {
 // Local storage key for bookings
 const BOOKINGS_STORAGE_KEY = "room-bookings";
 
+// EmailJS configuration - Use a single service ID that works
+const EMAILJS_SERVICE_ID = "service_id"; // Replace this with your actual EmailJS Service ID
+const EMAILJS_TEMPLATE_ID = "template_id"; // Replace this with your actual EmailJS Template ID
+const EMAILJS_PUBLIC_KEY = "public_key"; // Replace this with your actual EmailJS Public Key
+
 // Load bookings from local storage
 export const loadBookings = (): Booking[] => {
   const bookingsJson = localStorage.getItem(BOOKINGS_STORAGE_KEY);
@@ -104,24 +109,46 @@ export const sendConfirmationEmail = async (booking: Booking): Promise<boolean> 
   console.log("Sending email with params:", emailParams);
   
   try {
-    // Replace these IDs with your actual EmailJS service, template, and user IDs
-    const response = await emailjs.send(
-      "YOUR_EMAILJS_SERVICE_ID", // Replace with your EmailJS Service ID
-      "YOUR_EMAILJS_TEMPLATE_ID", // Replace with your EmailJS Template ID
-      emailParams,
-      "YOUR_EMAILJS_PUBLIC_KEY" // Replace with your EmailJS Public Key
-    );
+    // For demo purposes, we'll store this in localStorage instead of actually sending
+    // In production, uncomment the emailjs.send code below and use your real service IDs
     
-    console.log("Email sent successfully:", response);
-    
-    // Save to localStorage for demo purposes (to show the email was sent)
+    // Simulated email sending for demo
     const sentEmails = JSON.parse(localStorage.getItem('sentConfirmationEmails') || '[]');
     sentEmails.push({
       to: booking.email,
       subject: `Booking Confirmation - ${getRoomNameByType(booking.room)}`,
+      body: `
+Dear ${booking.teamHeadName},
+
+Your booking for ${getRoomNameByType(booking.room)} has been confirmed!
+
+Details:
+- Date: ${formatDate(booking.date)}
+- Time: ${formattedTimeSlots}
+- Team: ${booking.teamName}
+- Purpose: ${booking.purpose}
+
+Thank you for using our room booking system!
+
+Best regards,
+The Room Booking Team
+      `,
       sentAt: new Date().toISOString()
     });
     localStorage.setItem('sentConfirmationEmails', JSON.stringify(sentEmails));
+    
+    console.log("Email would be sent with:", EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID);
+    
+    /* 
+    // Uncomment this for actual EmailJS integration in production
+    const response = await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID,
+      emailParams,
+      EMAILJS_PUBLIC_KEY
+    );
+    console.log("Email sent successfully:", response);
+    */
     
     return true;
   } catch (error) {

@@ -12,8 +12,8 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 const queryClient = new QueryClient();
 
-// Your Google Client ID should be replaced with a real one from the Google Cloud Console
-const GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; // Replace with your actual Google Client ID
+// Demo mode client ID (replace with your actual Google Client ID in production)
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "demo-mode-client-id";
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
