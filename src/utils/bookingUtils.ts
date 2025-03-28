@@ -106,7 +106,7 @@ export const sendConfirmationEmail = async (booking: Booking): Promise<boolean> 
   try {
     // Replace these IDs with your actual EmailJS service, template, and user IDs
     const response = await emailjs.send(
-      "YOUR_EMAILJS_SERVICE_ID", // Replace with your EmailJS Service ID
+      "service_szixbru", // Replace with your EmailJS Service ID
       "YOUR_EMAILJS_TEMPLATE_ID", // Replace with your EmailJS Template ID
       emailParams,
       "YOUR_EMAILJS_PUBLIC_KEY" // Replace with your EmailJS Public Key
