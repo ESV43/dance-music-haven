@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { GoogleLogin as ReactGoogleLogin } from "@react-oauth/google";
@@ -27,13 +27,26 @@ export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isDemoMode, setIsDemoMode] = useState(false);
   const { login } = useAuth();
+  
+  useEffect(() => {
+    // Check if Google client ID is properly configured
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    console.log("Google Client ID configured:", !!clientId);
+    if (!clientId || clientId === "demo-mode-client-id") {
+      console.log("Using demo mode due to missing Google Client ID");
+      setIsDemoMode(true);
+    }
+  }, []);
 
   const handleGoogleLoginSuccess = async (credentialResponse: GoogleCredentialResponse) => {
     setIsLoading(true);
+    console.log("Google login success, processing credential...");
     
     try {
       // Decode the JWT token from Google
       const decoded = jwtDecode<DecodedCredential>(credentialResponse.credential);
+      console.log("Decoded credential:", decoded.email);
+      
       const userEmail = decoded.email;
       const userName = decoded.name || "";
       const userPicture = decoded.picture || "";
@@ -46,6 +59,7 @@ export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
     } catch (error) {
       console.error("Google login error:", error);
       toast.error("Failed to sign in with Google. Please try again.");
+      setIsDemoMode(true);
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +87,21 @@ export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
     setIsLoading(false);
   };
 
+  // Show demo login immediately if in demo mode
+  if (isDemoMode) {
+    return (
+      <div className="w-full">
+        <Button
+          onClick={handleDemoLogin}
+          className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded flex items-center justify-center space-x-2"
+        >
+          <User className="h-5 w-5" />
+          <span>Continue with Demo Account</span>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full">
       {isLoading ? (
@@ -81,14 +110,6 @@ export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
           className="w-full bg-white hover:bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded flex items-center justify-center space-x-2"
         >
           <div className="animate-spin h-5 w-5 border-b-2 border-gray-800 rounded-full"></div>
-        </Button>
-      ) : isDemoMode ? (
-        <Button
-          onClick={handleDemoLogin}
-          className="w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium py-2 px-4 rounded flex items-center justify-center space-x-2"
-        >
-          <User className="h-5 w-5" />
-          <span>Continue with Demo Account</span>
         </Button>
       ) : (
         <div className="flex justify-center items-center w-full">
@@ -102,6 +123,7 @@ export function GoogleLogin({ onLoginSuccess }: GoogleLoginProps) {
             type="standard"
             logo_alignment="left"
             width="100%"
+            context="use"
           />
         </div>
       )}

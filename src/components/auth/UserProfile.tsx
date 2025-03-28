@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -17,12 +17,20 @@ export function UserProfile() {
   const { user, logout, isAuthenticated, LoginButton } = useAuth();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  useEffect(() => {
+    // Add debugging log
+    console.log("Auth state:", { isAuthenticated, user });
+  }, [isAuthenticated, user]);
+
   if (!isAuthenticated) {
     return (
       <div className="flex items-center space-x-2">
         {isLoggingIn ? (
           <div className="w-[200px]">
-            <LoginButton />
+            <LoginButton onSuccess={() => {
+              console.log("Login successful via UserProfile");
+              setIsLoggingIn(false);
+            }} />
           </div>
         ) : (
           <Button
